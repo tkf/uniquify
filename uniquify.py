@@ -21,7 +21,7 @@ def skipcommonname(names, sep=None, skip='...'):
     """
     (lol, sep) = _split_names(names, sep)
     chunks = _get_chunks(lol)
-    return list(_get_unique_name(n, chunks, sep, skip) for n in lol)
+    return list(_skip_common_parts(n, chunks, sep, skip) for n in lol)
 
 
 def _split_names(names, sep):
@@ -55,17 +55,19 @@ def skipcommonpath(paths, skip='...'):
     return skipcommonname(paths, os.path.sep, skip)
 
 
-def _get_unique_name(name, chunks, sep, skip):
+def _skip_common_parts(name, chunks, sep, skip):
     """
-    Generate unique name; avoid skipping if it makes name longer
+    Convert common parts in ``name`` to ``skip``
+
+    Skipping is avoided if it makes name longer.
 
     >>> chunks = ([(0, 5), (5, 10), (10, 15)], [True, False, True])
-    >>> _get_unique_name(list('aaaaa*****ccccc'), chunks, '', '...')
+    >>> _skip_common_parts(list('aaaaa*****ccccc'), chunks, '', '...')
     'aaaaa...ccccc'
     >>> chunks = ([(0, 1), (1, 2), (2, 3)], [True, False, True])
-    >>> _get_unique_name(['a', '*', 'c'], chunks, '/', '...')
+    >>> _skip_common_parts(['a', '*', 'c'], chunks, '/', '...')
     'a/*/c'
-    >>> _get_unique_name(['aaaaa', '*****', 'ccccc'], chunks, '/', '...')
+    >>> _skip_common_parts(['aaaaa', '*****', 'ccccc'], chunks, '/', '...')
     'aaaaa/.../ccccc'
 
     """
