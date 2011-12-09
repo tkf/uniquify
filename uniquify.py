@@ -1,21 +1,21 @@
 import os
 
 
-def uniqname(names, sep=None, skip='...'):
+def skipcommonname(names, sep=None, skip='...'):
     """
     Generate unique names from a list of strings
 
-    >>> uniqname(['aa', 'ab'], skip='')
+    >>> skipcommonname(['aa', 'ab'], skip='')
     ['a', 'b']
-    >>> uniqname(['aac', 'abc'], skip='')
+    >>> skipcommonname(['aac', 'abc'], skip='')
     ['a', 'b']
-    >>> uniqname(['aac', 'abc'])
+    >>> skipcommonname(['aac', 'abc'])
     ['aac', 'abc']
-    >>> uniqname(['aaxxxxc', 'abxxxxb', 'abxxxxc'])
+    >>> skipcommonname(['aaxxxxc', 'abxxxxb', 'abxxxxc'])
     ['aa...c', 'ab...b', 'ab...c']
-    >>> uniqname(['aa|c|c|de', 'ab|c|c|dd', 'ab|c|c|de'], sep='|')
+    >>> skipcommonname(['aa|c|c|de', 'ab|c|c|dd', 'ab|c|c|de'], sep='|')
     ['aa|...|de', 'ab|...|dd', 'ab|...|de']
-    >>> uniqname(['aa|c|de', 'ab|c|dd', 'ab|c|de'], sep='|')
+    >>> skipcommonname(['aa|c|de', 'ab|c|dd', 'ab|c|de'], sep='|')
     ['aa|c|de', 'ab|c|dd', 'ab|c|de']
 
     """
@@ -28,19 +28,19 @@ def uniqname(names, sep=None, skip='...'):
     return list(_get_unique_name(n, chunks, sep, skip) for n in lol)
 
 
-def uniqpath(paths, skip='...'):
+def skipcommonpath(paths, skip='...'):
     """
     Generate unique names from a list of file paths
 
-    >>> uniqpath(['a/a', 'a/b'], skip='*')
+    >>> skipcommonpath(['a/a', 'a/b'], skip='*')
     ['*/a', '*/b']
-    >>> uniqpath(['a/a/c', 'a/b/c'], skip='*')
+    >>> skipcommonpath(['a/a/c', 'a/b/c'], skip='*')
     ['*/a/*', '*/b/*']
-    >>> uniqpath(['a/ac', 'a/bc'], skip='*')
+    >>> skipcommonpath(['a/ac', 'a/bc'], skip='*')
     ['*/ac', '*/bc']
 
     """
-    return uniqname(paths, os.path.sep, skip)
+    return skipcommonname(paths, os.path.sep, skip)
 
 
 def _get_unique_name(name, chunks, sep, skip):
