@@ -21,7 +21,7 @@ def skipcommonname(names, sep=None, skip='...'):
     """
     (lol, sep) = _split_names(names, sep)
     chunks = _get_chunks(lol)
-    return list(_skip_common_parts(n, chunks, sep, skip) for n in lol)
+    return _skip_common_parts_in_lol(lol, chunks, sep, skip)
 
 
 def _split_names(names, sep):
@@ -53,6 +53,10 @@ def skipcommonpath(paths, skip='...'):
 
     """
     return skipcommonname(paths, os.path.sep, skip)
+
+
+def _skip_common_parts_in_lol(lol, chunks, sep, skip):
+    return list(_skip_common_parts(n, chunks, sep, skip) for n in lol)
 
 
 def _skip_common_parts(name, chunks, sep, skip):
