@@ -35,6 +35,10 @@ Convert common parts into skip marks:
 """
 # [[[end]]]
 
+__author__ = "Takafumi Arakaki"
+__version__ = '0.0.0'
+__license__ = "MIT License"
+
 
 import os
 
