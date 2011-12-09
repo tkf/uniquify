@@ -1,6 +1,61 @@
 import os
 
 
+def shortname(names, utype='tail', sep=None, skip='...'):
+    """
+    Get unique short names from a list of strings
+
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___uvw'])
+    ['def', 'uvw']
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___uvw'], utype='head')
+    ['abc', 'xyz']
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___def',
+    ...            '_____xyz___uvw'])
+    ['abc...def', 'xyz...def', 'xyz...uvw']
+
+    """
+    if utype not in ['tail', 'head']:
+        raise ValueError("'{0}' is not a recognized ``utype``".format(utype))
+    numnames = len(set(names))
+    (lol, sep) = _split_names(names, sep)
+    chunks = _get_chunks(lol)
+
+    if utype == 'tail':
+        chunks = _reverse_chunks(chunks)
+
+    i0set = False
+    for (i, ((_dummy, _dummy), diff)) in enumerate(zip(*chunks)):
+        if diff:
+            if not i0set:
+                i0 = i
+                i0set = True
+            subchunks = (chunks[0][i0:i + 1], chunks[1][i0:i + 1])
+            if utype == 'tail':
+                subchunks = _reverse_chunks(subchunks)
+            newnames = _skip_common_parts_in_lol(lol, subchunks, sep, skip)
+            if len(set(newnames)) == numnames:
+                return newnames
+
+
+def shortpath(names, utype='tail', skip='...'):
+    """
+    Get unique short paths from a list of strings
+
+    >>> shortpath(['some/long/path/ABC/middle/part/DEF',
+    ...            'some/long/path/XYZ/middle/part/UVW'])
+    ['DEF', 'UVW']
+    >>> shortpath(['some/long/path/ABC/middle/part/DEF',
+    ...            'some/long/path/XYZ/middle/part/DEF',
+    ...            'some/long/path/XYZ/middle/part/UVW'])
+    ['ABC/.../DEF', 'XYZ/.../DEF', 'XYZ/.../UVW']
+
+    """
+    return shortname(names, utype, os.path.sep, skip)
+
+
 def skipcommonname(names, sep=None, skip='...'):
     """
     Generate unique names from a list of strings
@@ -86,6 +141,10 @@ def _skip_common_parts(name, chunks, sep, skip):
     return sep.join(newname)
 
 
+def _reverse_chunks(chunks):
+    return (chunks[0][::-1], chunks[1][::-1])
+
+
 def _get_chunks(lol):
     """
     Returns common and different "chunks" of the list in the list (``lol``)
@@ -121,6 +180,7 @@ def _get_chunks(lol):
     diffs = []
     rawdiffs = _diff_list(lol)
     start = 0
+    d1 = rawdiffs[0]
     for (i, (d0, d1)) in enumerate(zip(rawdiffs[:-1], rawdiffs[1:])):
         if d0 != d1:
             ranges.append((start, i + 1))
