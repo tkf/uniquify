@@ -1,7 +1,7 @@
 # Import README.rst using cog
 # [[[cog
 # from cog import out
-# out('"""\n{0}"""'.format(file('README.rst').read()))
+# out('"""\n{0}\n"""'.format(file('README.rst').read()))
 # ]]]
 """
 Uniquify - get unique, short and easy-to-read names and paths
@@ -47,6 +47,7 @@ Install it from pypi_
   # easy_install uniquify
 
 .. _pypi: http://pypi.python.org/pypi/uniquify/
+
 """
 # [[[end]]]
 
@@ -58,7 +59,7 @@ __license__ = "MIT License"
 import os
 
 
-def shortname(names, utype='tail', sep=None, skip='...'):
+def shortname(names, sep=None, skip='...', utype='tail'):
     """
     Get unique short names from a list of strings
 
@@ -84,7 +85,7 @@ def shortname(names, utype='tail', sep=None, skip='...'):
         chunks = _reverse_chunks(chunks)
 
     i0set = False
-    for (i, ((_dummy, _dummy), diff)) in enumerate(zip(*chunks)):
+    for (i, diff) in enumerate(chunks[1]):
         if diff:
             if not i0set:
                 i0 = i
@@ -97,7 +98,7 @@ def shortname(names, utype='tail', sep=None, skip='...'):
                 return newnames
 
 
-def shortpath(names, utype='tail', skip='...'):
+def shortpath(names, skip='...', utype='tail'):
     """
     Get unique short paths from a list of strings
 
@@ -110,7 +111,7 @@ def shortpath(names, utype='tail', skip='...'):
     ['ABC/.../DEF', 'XYZ/.../DEF', 'XYZ/.../UVW']
 
     """
-    return shortname(names, utype, os.path.sep, skip)
+    return shortname(names, os.path.sep, skip, utype)
 
 
 def skipcommonname(names, sep=None, skip='...'):
@@ -206,12 +207,14 @@ def _get_chunks(lol):
     """
     Returns common and different "chunks" of the list in the list (``lol``)
 
+    Data structure of chunks
+    ------------------------
 
     chunks : (ranges, diffs)
         Common and different chunks
 
-        ranges : [(start, stop)] --- list of start-stop pairs
-            Definition of the ranges
+        ranges : [(start, stop)]
+            A list of ranges (start-stop pairs)
 
             start : int
                 The first index of the range
@@ -219,11 +222,12 @@ def _get_chunks(lol):
             stop : int
                 The last + 1 index of the range
 
-        diffs : [bool] --- list of bools
+        diffs : [bool]
             True if the corresponding element in ``ranges`` is
             different, otherwise False.
 
-    Examples:
+    Examples
+    --------
 
     >>> _get_chunks([[1, 2, 3],
     ...              [1, 2, 2]])
