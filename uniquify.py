@@ -19,13 +19,25 @@ def skipcommonname(names, sep=None, skip='...'):
     ['aa|c|de', 'ab|c|dd', 'ab|c|de']
 
     """
-    if sep is None:
-        lol = list(list(n) for n in names)
-        sep = ''
-    else:
-        lol = list(n.split(sep) for n in names)
+    (lol, sep) = _split_names(names, sep)
     chunks = _get_chunks(lol)
     return list(_get_unique_name(n, chunks, sep, skip) for n in lol)
+
+
+def _split_names(names, sep):
+    """
+    Split strings in ``names`` and returns ``(names, sep)`` pair
+
+    >>> _split_names(['abc'], None)
+    ([['a', 'b', 'c']], '')
+    >>> _split_names(['a/b/c'], '/')
+    ([['a', 'b', 'c']], '/')
+
+    """
+    if sep is None:
+        return ([list(n) for n in names], '')
+    else:
+        return ([n.split(sep) for n in names], sep)
 
 
 def skipcommonpath(paths, skip='...'):
