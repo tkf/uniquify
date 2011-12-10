@@ -78,6 +78,14 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     ...            '_____xyz___def',
     ...            '_____x'])
     ['abc___def', 'xyz___def', 'x']
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___def',
+    ...            '_____xy'], minlen=2)
+    ['abc___def', 'xyz___def', 'xy']
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___def',
+    ...            '_____x'], minlen=2)
+    ['...abc___def', '...xyz___def', '...x']
 
     """
     if utype not in ['tail', 'head']:
@@ -92,10 +100,10 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     numnames = len(set(names))
     i0set = False
     for i in range(len(lol[0])):
-        if len(set(l[i] for l in lol)) > 1:
-            if not i0set:
-                i0 = i
-                i0set = True
+        if not i0set and len(set(l[i] for l in lol)) > 1:
+            i0 = i
+            i0set = True
+        if i0set:
             sublol = [l[i0:i + 1] for l in lol]
             if utype == 'tail':
                 sublol = _reversed_rows(sublol)
