@@ -60,7 +60,7 @@ import os
 import itertools
 
 
-def shortname(names, sep=None, skip='...', utype='tail'):
+def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     """
     Get unique short names from a list of strings
 
@@ -74,6 +74,10 @@ def shortname(names, sep=None, skip='...', utype='tail'):
     ...            '_____xyz___def',
     ...            '_____xyz___uvw'])
     ['c...def', 'z...def', 'z...uvw']
+    >>> shortname(['_____abc___def',
+    ...            '_____xyz___def',
+    ...            '_____x'])
+    ['abc___def', 'xyz___def', 'x']
 
     """
     if utype not in ['tail', 'head']:
@@ -95,12 +99,13 @@ def shortname(names, sep=None, skip='...', utype='tail'):
             sublol = [l[i0:i + 1] for l in lol]
             if utype == 'tail':
                 sublol = _reversed_rows(sublol)
-            subnames = map(''.join, filter(lambda x: x is not None, sublol))
-            if len(set(subnames)) == numnames:
+            subnames = [''.join(x for x in l if x is not None) for l in sublol]
+            if (len(set(subnames)) == numnames and
+                min(map(len, subnames)) >= minlen):
                 return subnames
 
 
-def shortpath(names, skip='...', utype='tail'):
+def shortpath(names, skip='...', utype='tail', minlen=1):
     """
     Get unique short paths from a list of strings
 
@@ -113,7 +118,7 @@ def shortpath(names, skip='...', utype='tail'):
     ['ABC/.../DEF', 'XYZ/.../DEF', 'XYZ/.../UVW']
 
     """
-    return shortname(names, os.path.sep, skip, utype)
+    return shortname(names, os.path.sep, skip, utype, minlen)
 
 
 def skipcommonname(names, sep=None, skip='...'):
@@ -148,10 +153,10 @@ def _skipcommon_lol(names, seplist, skip):
     if seplist:
         (lol, sep) = _split_names(names, seplist[0])
         chunks = _get_chunks(lol)
-        newlol = [
-            list(_every_other(
-                _skip_common_parts_as_list(n, chunks, len(sep), skip), sep))
-            for n in lol]
+        newlol = [_skip_common_parts_as_list(n, chunks, len(sep), skip)
+                  for n in lol]
+        if sep:
+            newlol = [list(_every_other(l, sep)) for l in newlol]
         fulllol = [[] for _dummy in range(len(newlol))]
         for i in itertools.count():
             (subnames, j2k) = _lol_col(newlol, i)
