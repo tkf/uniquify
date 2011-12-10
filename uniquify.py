@@ -57,6 +57,7 @@ __license__ = "MIT License"
 
 
 import os
+import itertools
 
 
 def shortname(names, sep=None, skip='...', utype='tail'):
@@ -130,11 +131,68 @@ def skipcommonname(names, sep=None, skip='...'):
     ['aa|...|de', 'ab|...|dd', 'ab|...|de']
     >>> skipcommonname(['aa|c|de', 'ab|c|dd', 'ab|c|de'], sep='|')
     ['aa|c|de', 'ab|c|dd', 'ab|c|de']
+    >>> skipcommonname(['aa|c|d_e',
+    ...                 'ab|c|d_d',
+    ...                 'ab|c|d_e'],
+    ...                sep=('|', '_'), skip='*')
+    ['aa|*|*_e', 'ab|*|*_d', 'ab|*|*_e']
 
     """
-    (lol, sep) = _split_names(names, sep)
-    chunks = _get_chunks(lol)
-    return _skip_common_parts_in_lol(lol, chunks, sep, skip)
+    if not isinstance(sep, (tuple, list)):
+        sep = (sep,)
+    return map(''.join, _skipcommon_lol(names, sep, skip))
+
+
+def _skipcommon_lol(names, seplist, skip):
+    if seplist:
+        (lol, sep) = _split_names(names, seplist[0])
+        chunks = _get_chunks(lol)
+        newlol = [
+            list(_every_other(
+                _skip_common_parts_as_list(n, chunks, len(sep), skip), sep))
+            for n in lol]
+        fulllol = [[] for _dummy in range(len(newlol))]
+        for i in itertools.count():
+            (subnames, j2k) = _lol_col(newlol, i)
+            if not subnames:
+                break
+            if subnames[0] in (sep, skip):
+                subnews = [[n] for n in subnames]
+            else:
+                subnews = _skipcommon_lol(subnames, seplist[1:], skip)
+            for (j, subfull) in enumerate(fulllol):
+                if j in j2k:
+                    subfull.extend(subnews[j2k[j]])
+        return fulllol
+    else:
+        return [[n] for n in names]
+
+
+def _lol_col(lol, i):
+    """
+    Get ``i``-th column of list of list ``lol`` as (possibly shorter) list
+
+    >>> (col, j2k) = _lol_col([[0, 1], [2, 3], [4, 5]], 0)
+    >>> col
+    [0, 2, 4]
+    >>> (col, j2k) = _lol_col([[0, 1], [2], [4, 5]], 1)
+    >>> col
+    [1, 5]
+    >>> col[j2k[0]]
+    1
+    >>> col[j2k[2]]
+    5
+
+    """
+    col = []
+    j2k = {}
+    k = 0
+    for (j, lst) in enumerate(lol):
+        if i < len(lst):
+            col.append(lst[i])
+            j2k[j] = k
+            k += 1
+    return (col, j2k)
 
 
 def _split_names(names, sep):
@@ -186,17 +244,45 @@ def _skip_common_parts(name, chunks, sep, skip):
     'a/*/c'
     >>> _skip_common_parts(['aaaaa', '*****', 'ccccc'], chunks, '/', '...')
     'aaaaa/.../ccccc'
+    >>> _skip_common_parts(['aaaaa', '*****'], chunks, '/', '...')
+    'aaaaa/...'
 
     """
+    return sep.join(_skip_common_parts_as_list(name, chunks, len(sep), skip))
+
+
+def _skip_common_parts_as_list(name, chunks, sepwidth, skip):
     skipwidth = len(skip)
     newname = []
     for ((start, stop), diff) in zip(*chunks):
-        subname = sep.join(name[start:stop])
-        if diff or len(subname) < skipwidth:
-            newname.append(subname)
+        subname = name[start:stop]
+        subwidth = sum(map(len, subname)) + sepwidth * (stop - start)
+        if diff or subwidth < skipwidth:
+            newname.extend(subname)
         else:
             newname.append(skip)
-    return sep.join(newname)
+    return newname
+
+
+def _every_other(iterative, sep, head=False, tail=False):
+    """
+    Put ``sep`` into every other element in ``iterative``
+
+    >>> list(_every_other([1, 2, 3], 0))
+    [1, 0, 2, 0, 3]
+    >>> list(_every_other([1, 2, 3], 0, head=True, tail=True))
+    [0, 1, 0, 2, 0, 3, 0]
+
+    """
+    iterative = iter(iterative)
+    if head:
+        yield sep
+    yield iterative.next()
+    for elem in iterative:
+        yield sep
+        yield elem
+    if tail:
+        yield sep
 
 
 def _reverse_chunks(chunks):
