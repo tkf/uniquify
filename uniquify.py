@@ -14,9 +14,9 @@ Shorten names/paths by extracting non-common parts:
 
 >>> from uniquify import shortname, shortpath
 >>> shortname(['__common_part___abc___common_part__',
-...            '__common_part___ijk___common_part__',
+...            '__common_part___xbc___common_part__',
 ...            '__common_part___xyz___common_part__'])
-['c', 'k', 'z']
+['abc', 'xbc', 'xyz']
 >>> shortpath(['some/long/path/___/alpha/___/___/',
 ...            'some/long/path/___/beta/___/___/',
 ...            'some/long/path/___/gamma/___/___/'])
