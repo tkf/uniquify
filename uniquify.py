@@ -16,7 +16,7 @@ Shorten names/paths by extracting non-common parts:
 >>> shortname(['__common_part___abc___common_part__',
 ...            '__common_part___ijk___common_part__',
 ...            '__common_part___xyz___common_part__'])
-['abc', 'ijk', 'xyz']
+['c', 'k', 'z']
 >>> shortpath(['some/long/path/___/alpha/___/___/',
 ...            'some/long/path/___/beta/___/___/',
 ...            'some/long/path/___/gamma/___/___/'])
@@ -66,37 +66,38 @@ def shortname(names, sep=None, skip='...', utype='tail'):
 
     >>> shortname(['_____abc___def',
     ...            '_____xyz___uvw'])
-    ['def', 'uvw']
+    ['f', 'w']
     >>> shortname(['_____abc___def',
     ...            '_____xyz___uvw'], utype='head')
-    ['abc', 'xyz']
+    ['a', 'x']
     >>> shortname(['_____abc___def',
     ...            '_____xyz___def',
     ...            '_____xyz___uvw'])
-    ['abc...def', 'xyz...def', 'xyz...uvw']
+    ['c...def', 'z...def', 'z...uvw']
 
     """
     if utype not in ['tail', 'head']:
         raise ValueError("'{0}' is not a recognized ``utype``".format(utype))
-    numnames = len(set(names))
-    (lol, sep) = _split_names(names, sep)
-    chunks = _get_chunks(lol)
+    if not isinstance(sep, (tuple, list)):
+        sep = (sep,)
 
+    lol = _lol_fill(_skipcommon_lol(names, sep, skip), None)
     if utype == 'tail':
-        chunks = _reverse_chunks(chunks)
+        lol = _reversed_rows(lol)
 
+    numnames = len(set(names))
     i0set = False
-    for (i, diff) in enumerate(chunks[1]):
-        if diff:
+    for i in range(len(lol[0])):
+        if len(set(l[i] for l in lol)) > 1:
             if not i0set:
                 i0 = i
                 i0set = True
-            subchunks = (chunks[0][i0:i + 1], chunks[1][i0:i + 1])
+            sublol = [l[i0:i + 1] for l in lol]
             if utype == 'tail':
-                subchunks = _reverse_chunks(subchunks)
-            newnames = _skip_common_parts_in_lol(lol, subchunks, sep, skip)
-            if len(set(newnames)) == numnames:
-                return newnames
+                sublol = _reversed_rows(sublol)
+            subnames = map(''.join, filter(lambda x: x is not None, sublol))
+            if len(set(subnames)) == numnames:
+                return subnames
 
 
 def shortpath(names, skip='...', utype='tail'):
@@ -166,6 +167,25 @@ def _skipcommon_lol(names, seplist, skip):
         return fulllol
     else:
         return [[n] for n in names]
+
+
+def _reversed_rows(lol):
+    return [list(reversed(l)) for l in lol]
+
+
+def _lol_fill(lol, fill):
+    """
+    Fill each row of ``lol`` with ``fill`` making them same length
+
+    >>> _lol_fill([[0, 1], [2, 3], [4, 5]], None)
+    [[0, 1], [2, 3], [4, 5]]
+    >>> _lol_fill([[0, 1], [2], [4, 5]], None)
+    [[0, 1], [2, None], [4, 5]]
+
+    """
+    lenrow = max(map(len, lol))
+    indicies = range(lenrow)
+    return [[l[i] if i < len(l) else fill for i in indicies] for l in lol]
 
 
 def _lol_col(lol, i):
@@ -283,10 +303,6 @@ def _every_other(iterative, sep, head=False, tail=False):
         yield elem
     if tail:
         yield sep
-
-
-def _reverse_chunks(chunks):
-    return (chunks[0][::-1], chunks[1][::-1])
 
 
 def _get_chunks(lol):

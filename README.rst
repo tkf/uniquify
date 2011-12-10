@@ -10,7 +10,7 @@ Shorten names/paths by extracting non-common parts:
 >>> shortname(['__common_part___abc___common_part__',
 ...            '__common_part___ijk___common_part__',
 ...            '__common_part___xyz___common_part__'])
-['abc', 'ijk', 'xyz']
+['c', 'k', 'z']
 >>> shortpath(['some/long/path/___/alpha/___/___/',
 ...            'some/long/path/___/beta/___/___/',
 ...            'some/long/path/___/gamma/___/___/'])
