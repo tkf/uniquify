@@ -398,3 +398,35 @@ def _diff_list(lol):
             if ls0len <= i or len(ls) <= i or ls0[i] != ls[i]:
                 diff[i] = True
     return diff
+
+
+def main():
+    from argparse import ArgumentParser
+    parser = ArgumentParser(description='Uniquify CLI')
+    parser.add_argument(
+        'file', nargs='?', default='-',
+        help='file to read. "-" means stdin. (default: %(default)s)')
+    parser.add_argument(
+        '-m', '--method', default='skipcommonpath',
+        choices=['shortpath', 'shortname', 'skipcommonname', 'skipcommonpath'],
+        help='function to call (default: %(default)s)')
+    parser.add_argument('-s', '--sep')
+    parser.add_argument('-u', '--utype')
+    parser.add_argument('-l', '--minlen', type=int)
+    args = parser.parse_args()
+
+    kwds = dict((k, getattr(args, k)) for k in ['sep', 'utype', 'minlen']
+                if getattr(args, k))
+
+    if args.file == '-':
+        import sys
+        infile = sys.stdin
+    else:
+        infile = file(args.file)
+    lines = map(str.strip, infile.readlines())
+
+    print '\n'.join(globals()[args.method](lines, **kwds))
+
+
+if __name__ == '__main__':
+    main()
