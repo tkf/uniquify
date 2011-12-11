@@ -88,6 +88,7 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     ['...abc___def', '...xyz___def', '...x']
 
     """
+    names = list(names)
     if utype not in ['tail', 'head']:
         raise ValueError("'{0}' is not a recognized ``utype``".format(utype))
     if not isinstance(sep, (tuple, list)):
@@ -152,6 +153,7 @@ def skipcommonname(names, sep=None, skip='...'):
     ['aa|*|*_e', 'ab|*|*_d', 'ab|*|*_e']
 
     """
+    names = list(names)
     if not isinstance(sep, (tuple, list)):
         sep = (sep,)
     return map(''.join, _skipcommon_lol(names, sep, skip))
