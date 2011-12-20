@@ -383,10 +383,16 @@ def _diff_list(lol):
     >>> _diff_list([[1, 2, 3],
     ...             [1, 2]])
     [False, False, True]
+    >>> _diff_list([[1, 2, 3]])
+    [False, False, False]
+    >>> _diff_list([])
+    []
 
     """
-    if  len(lol) < 2:
-        raise ValueError('Need at least 2 list. {0} given'.format(len(lol)))
+    if len(lol) == 0:
+        return []
+    elif len(lol) == 1:
+        return [False] * len(lol[0])
 
     ls0 = lol[0]
     ls0len = len(ls0)
