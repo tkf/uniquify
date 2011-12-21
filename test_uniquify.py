@@ -1,4 +1,5 @@
 import uniquify
+from nose.tools import eq_
 
 
 class CheckData(object):
@@ -18,6 +19,7 @@ def rak(result, *args, **kwds):
 class TestShortName(CheckData):
 
     data = [
+        rak([], []),
         rak(['f', 'w'],
             ['_____abc___def',
              '_____xyz___uvw']),
@@ -41,12 +43,13 @@ class TestShortName(CheckData):
         ]
 
     def check(self, result, args, kwds):
-        assert result == uniquify.shortname(*args, **kwds)
+        eq_(result, uniquify.shortname(*args, **kwds))
 
 
 class TestShortPath(CheckData):
 
     data = [
+        rak([], []),
         rak(['DEF', 'UVW'],
             ['some/long/path/ABC/middle/part/DEF',
              'some/long/path/XYZ/middle/part/UVW']),
@@ -57,12 +60,13 @@ class TestShortPath(CheckData):
         ]
 
     def check(self, result, args, kwds):
-        assert result == uniquify.shortpath(*args, **kwds)
+        eq_(result, uniquify.shortpath(*args, **kwds))
 
 
 class TestSkipCommonName(CheckData):
 
     data = [
+        rak([], []),
         rak(['a', 'b'],
             ['aa', 'ab'], skip=''),
         rak(['a', 'b'],
@@ -82,12 +86,13 @@ class TestSkipCommonName(CheckData):
         ]
 
     def check(self, result, args, kwds):
-        assert result == uniquify.skipcommonname(*args, **kwds)
+        eq_(result, uniquify.skipcommonname(*args, **kwds))
 
 
 class TestSkipCommonPath(CheckData):
 
     data = [
+        rak([], []),
         rak(['*/a', '*/b'],
             ['a/a', 'a/b'], skip='*'),
         rak(['*/a/*', '*/b/*'],
@@ -97,4 +102,4 @@ class TestSkipCommonPath(CheckData):
         ]
 
     def check(self, result, args, kwds):
-        assert result == uniquify.skipcommonpath(*args, **kwds)
+        eq_(result, uniquify.skipcommonpath(*args, **kwds))

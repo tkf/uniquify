@@ -58,8 +58,19 @@ __license__ = "MIT License"
 
 import os
 import itertools
+import functools
 
 
+def _pass_empty_list(func):
+    @functools.wraps(func)
+    def new_func(lst, *args, **kwds):
+        if not lst:
+            return []
+        return func(lst, *args, **kwds)
+    return new_func
+
+
+@_pass_empty_list
 def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     """
     Get unique short names from a list of strings
@@ -114,6 +125,7 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
                 return subnames
 
 
+@_pass_empty_list
 def shortpath(names, skip='...', utype='tail', minlen=1):
     """
     Get unique short paths from a list of strings
@@ -130,6 +142,7 @@ def shortpath(names, skip='...', utype='tail', minlen=1):
     return shortname(names, os.path.sep, skip, utype, minlen)
 
 
+@_pass_empty_list
 def skipcommonname(names, sep=None, skip='...'):
     """
     Generate unique names from a list of strings
@@ -246,6 +259,7 @@ def _split_names(names, sep):
         return ([n.split(sep) for n in names], sep)
 
 
+@_pass_empty_list
 def skipcommonpath(paths, skip='...'):
     """
     Generate unique names from a list of file paths
