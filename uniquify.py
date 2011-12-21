@@ -119,10 +119,17 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
             sublol = [l[i0:i + 1] for l in lol]
             if utype == 'tail':
                 sublol = _reversed_rows(sublol)
-            subnames = [''.join(x for x in l if x is not None) for l in sublol]
+            subnames = _join_rows_skipping_nones(sublol)
             if (len(set(subnames)) == numnames and
                 min(map(len, subnames)) >= minlen):
                 return subnames
+    if utype == 'tail':
+        lol = _reversed_rows(lol)
+    return _join_rows_skipping_nones(lol)
+
+
+def _join_rows_skipping_nones(lol):
+    return [''.join(x for x in l if x is not None) for l in lol]
 
 
 @_pass_empty_list

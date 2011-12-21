@@ -20,6 +20,7 @@ class TestShortName(CheckData):
 
     data = [
         rak([], []),
+        rak(['...'], ['one']),
         rak(['f', 'w'],
             ['_____abc___def',
              '_____xyz___uvw']),
@@ -50,6 +51,7 @@ class TestShortPath(CheckData):
 
     data = [
         rak([], []),
+        rak(['...'], ['one']),
         rak(['DEF', 'UVW'],
             ['some/long/path/ABC/middle/part/DEF',
              'some/long/path/XYZ/middle/part/UVW']),
@@ -67,6 +69,7 @@ class TestSkipCommonName(CheckData):
 
     data = [
         rak([], []),
+        rak(['...'], ['one']),
         rak(['a', 'b'],
             ['aa', 'ab'], skip=''),
         rak(['a', 'b'],
@@ -93,6 +96,7 @@ class TestSkipCommonPath(CheckData):
 
     data = [
         rak([], []),
+        rak(['...'], ['one']),
         rak(['*/a', '*/b'],
             ['a/a', 'a/b'], skip='*'),
         rak(['*/a/*', '*/b/*'],
