@@ -107,3 +107,59 @@ class TestSkipCommonPath(CheckData):
 
     def check(self, result, args, kwds):
         eq_(result, uniquify.skipcommonpath(*args, **kwds))
+
+
+class TestSeqListSkipCommon(CheckData):
+
+    skipmarker = "@@@@@"
+    data = [
+        ([['a', 'b', 'c'], ['x', 'y', 'z']], ('|', )),
+        ([['a', skipmarker, 'b', 'c'],
+          ['x', skipmarker, 'y', 'z']], ('|', )),
+        ([['a', [skipmarker, 'b'], 'c'],
+          ['x', [skipmarker, 'y'], 'z']], ('|', '-')),
+        ]
+    # note that skipmarker must be at exactly the same place for each
+    # list in the namesources
+
+    def check(self, namesources, seplist, skip="..."):
+        names = [makename(ns, seplist) for ns in namesources]
+        desired = [makename(ns, seplist) for ns in
+                   deeplyreplaced(namesources, self.skipmarker, skip)]
+        sl = uniquify.SeqList.skipcommon(names, seplist, skip)
+        eq_(desired, sl.joinseqs())
+
+
+def makename(namesource, seplist):
+    """
+    Make a list of string joined using `sep`-s in `seplist`
+
+    >>> makename(['a', 'b', 'c'], ('.',))
+    'a.b.c'
+    >>> makename([['a', 'b'], ['c'], ['d']], ('.', '-'))
+    'a-b.c.d'
+
+    """
+    if seplist:
+        remseps = seplist[1:]
+        return seplist[0].join(makename(sub, remseps) for sub in namesource)
+    else:
+        return namesource
+
+
+def deeplyreplaced(lst, old, new):
+    """
+    Replace element `old` in (possibility nested) list
+
+    >>> deeplyreplaced([[1, [1, 1, [0, 1], 1]], [1, 1]], 0, 'REPLACED')
+    [[1, [1, 1, ['REPLACED', 1], 1]], [1, 1]]
+
+    """
+    newlst = []
+    for elem in lst:
+        if isinstance(elem, list):
+            elem = deeplyreplaced(elem, old, new)
+        elif elem == old:
+            elem = new
+        newlst.append(elem)
+    return newlst

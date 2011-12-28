@@ -106,31 +106,27 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     if not isinstance(sep, (tuple, list)):
         sep = (sep,)
 
-    lol = _lol_fill(_skipcommon_lol(names, sep, skip), None)
+    sl = SeqList.skipcommon(names, sep, skip).filled(None)
     if utype == 'tail':
-        lol = _reversed_rows(lol)
+        sl.reverseseq()
 
     numnames = len(set(names))
     i0set = False
-    for i in range(len(lol[0])):
-        if not i0set and len(set(l[i] for l in lol)) > 1:
+    for i in range(sl.maxseqlen()):
+        if not i0set and not sl.colunique(i):
             i0 = i
             i0set = True
         if i0set:
-            sublol = [l[i0:i + 1] for l in lol]
+            subsl = sl.subseqlist(i0, i + 1)
             if utype == 'tail':
-                sublol = _reversed_rows(sublol)
-            subnames = _join_rows_skipping_nones(sublol)
+                subsl.reverseseq()
+            subnames = subsl.joinseqs_skipping_nones()
             if (len(set(subnames)) == numnames and
                 min(map(len, subnames)) >= minlen):
                 return subnames
     if utype == 'tail':
-        lol = _reversed_rows(lol)
-    return _join_rows_skipping_nones(lol)
-
-
-def _join_rows_skipping_nones(lol):
-    return [''.join(x for x in l if x is not None) for l in lol]
+        sl.reverseseq()
+    return sl.joinseqs_skipping_nones()
 
 
 @_pass_empty_list
@@ -177,78 +173,7 @@ def skipcommonname(names, sep=None, skip='...'):
     names = list(names)
     if not isinstance(sep, (tuple, list)):
         sep = (sep,)
-    return map(''.join, _skipcommon_lol(names, sep, skip))
-
-
-def _skipcommon_lol(names, seplist, skip):
-    if seplist:
-        (lol, sep) = _split_names(names, seplist[0])
-        chunks = _get_chunks(lol)
-        newlol = [_skip_common_parts_as_list(n, chunks, len(sep), skip)
-                  for n in lol]
-        if sep:
-            newlol = [list(_every_other(l, sep)) for l in newlol]
-        fulllol = [[] for _dummy in range(len(newlol))]
-        for i in itertools.count():
-            (subnames, j2k) = _lol_col(newlol, i)
-            if not subnames:
-                break
-            if subnames[0] in (sep, skip):
-                subnews = [[n] for n in subnames]
-            else:
-                subnews = _skipcommon_lol(subnames, seplist[1:], skip)
-            for (j, subfull) in enumerate(fulllol):
-                if j in j2k:
-                    subfull.extend(subnews[j2k[j]])
-        return fulllol
-    else:
-        return [[n] for n in names]
-
-
-def _reversed_rows(lol):
-    return [list(reversed(l)) for l in lol]
-
-
-def _lol_fill(lol, fill):
-    """
-    Fill each row of ``lol`` with ``fill`` making them same length
-
-    >>> _lol_fill([[0, 1], [2, 3], [4, 5]], None)
-    [[0, 1], [2, 3], [4, 5]]
-    >>> _lol_fill([[0, 1], [2], [4, 5]], None)
-    [[0, 1], [2, None], [4, 5]]
-
-    """
-    lenrow = max(map(len, lol))
-    indicies = range(lenrow)
-    return [[l[i] if i < len(l) else fill for i in indicies] for l in lol]
-
-
-def _lol_col(lol, i):
-    """
-    Get ``i``-th column of list of list ``lol`` as (possibly shorter) list
-
-    >>> (col, j2k) = _lol_col([[0, 1], [2, 3], [4, 5]], 0)
-    >>> col
-    [0, 2, 4]
-    >>> (col, j2k) = _lol_col([[0, 1], [2], [4, 5]], 1)
-    >>> col
-    [1, 5]
-    >>> col[j2k[0]]
-    1
-    >>> col[j2k[2]]
-    5
-
-    """
-    col = []
-    j2k = {}
-    k = 0
-    for (j, lst) in enumerate(lol):
-        if i < len(lst):
-            col.append(lst[i])
-            j2k[j] = k
-            k += 1
-    return (col, j2k)
+    return SeqList.skipcommon(names, sep, skip).joinseqs()
 
 
 def _split_names(names, sep):
@@ -426,6 +351,121 @@ def _diff_list(lol):
             if ls0len <= i or len(ls) <= i or ls0[i] != ls[i]:
                 diff[i] = True
     return diff
+
+
+class SeqList(object):
+
+    def __init__(self, los):
+        """Create SeqList from a list of sequence `los`"""
+        self._los = los
+
+    def __unicode__(self):
+        return u"{0}({1})".format(self.__class__.__name__, self._los)
+
+    def __repr__(self):
+        return u"{0}({1!r})".format(self.__class__.__name__, self._los)
+
+    def __len__(self):
+        return len(self._los)
+
+    def __iter__(self):
+        return iter(self._los)
+
+    @classmethod
+    def skipcommon(cls, names, seplist, skip):
+        if seplist:
+            (lol, sep) = _split_names(names, seplist[0])
+            chunks = _get_chunks(lol)
+            newlol = [_skip_common_parts_as_list(n, chunks, len(sep), skip)
+                      for n in lol]
+            if sep:
+                newlol = [list(_every_other(l, sep)) for l in newlol]
+            newsl = cls(newlol)
+            fullsl = cls.makeempty(len(newsl))
+            for i in range(newsl.maxseqlen()):
+                subnames = newsl.col(i)
+                if len(set(subnames)) == 1 and subnames[0] in (sep, skip):
+                    subnews = [[n] for n in subnames]
+                else:
+                    subnews = cls.skipcommon(subnames, seplist[1:], skip)
+                fullsl.extendseq(subnews, subnames.indices)
+            return fullsl
+        else:
+            return cls([[n] for n in names])
+
+    def col(self, i):
+        indices = [j for (j, seq) in enumerate(self._los) if i < len(seq)]
+        return ColView(self._los, i, indices)
+
+    def extendseq(self, los, indices):
+        for (s, i) in zip(los, indices):
+            self._los[i].extend(s)
+
+    @classmethod
+    def makeempty(cls, numseq):
+        return cls([[] for _dummy in range(numseq)])
+
+    def subseqlist(self, start, stop):
+        return self.__class__([s[start:stop] for s in self._los])
+
+    def colunique(self, i):
+        return len(set(self.col(i))) == 1
+
+    def reverseseq(self):
+        """
+        Reverse all sequences
+
+        >>> sl = SeqList([[0, 1, 2], [3, 4, 5]])
+        >>> sl.reverseseq()
+        >>> sl
+        SeqList([[2, 1, 0], [5, 4, 3]])
+
+        """
+        self._los = [list(reversed(s)) for s in self._los]
+
+    def filled(self, fill):
+        """
+        Return a new SeqList instance whose sequences have same length
+
+        >>> SeqList([[0, 1, 2], [3, 4]]).filled(None)
+        SeqList([[0, 1, 2], [3, 4, None]])
+
+        """
+        seqlen = self.maxseqlen()
+        return self.__class__(
+            [s + [fill] * (seqlen - len(s)) for s in self._los])
+
+    def maxseqlen(self):
+        return max(map(len, self._los))
+
+    def joinseqs(self):
+        return map(''.join, self._los)
+
+    def joinseqs_skipping_nones(self, none=None):
+        """
+        Return a new SeqList instance whose sequences have same length
+
+        >>> SeqList([['a', None, 'b', None, None, 'c'],
+        ...          [None, 'x', 'y', None, 'z', None]]
+        ...         ).joinseqs_skipping_nones()
+        ['abc', 'xyz']
+
+        """
+        return [''.join(x for x in l if x is not none) for l in self._los]
+
+
+class ColView(object):
+
+    def __init__(self, los, i, indices):
+        self._los = los
+        self._i = i
+        self.indices = indices
+
+    def __iter__(self):
+        return (self._los[j][self._i] for j in self.indices)
+
+    def __getitem__(self, j):
+        return self._los[j][self._i]
 
 
 def main():
