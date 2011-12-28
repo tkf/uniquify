@@ -353,6 +353,28 @@ def _diff_list(lol):
 
 
 class SeqList(object):
+    r"""
+    List of sequence to hold data to be uniquified
+
+    Here, a "sequence" typically means a list of string.
+    (However, it can be a list of any comparable elements.)
+
+    List of sequence, its indices and columns::
+
+        Definition
+                        columns
+                 /-------------------\
+                   j=0  j=1  j=2
+        Seq. i=0:   a0   a1   a2   ...   \
+        Seq. i=1:   b0   b1   b2   ...   | List
+        Seq. i=2:   c0   c1   c2   ...   |  of
+           ...                           | Sequence
+        Seq. i=N:   z0   z1   z2   ...   /
+                    |    |
+                    |    `- 1-st column
+                    `- 0-th column
+
+    """
 
     def __init__(self, los):
         """Create SeqList from a list of sequence `los`"""
@@ -393,10 +415,34 @@ class SeqList(object):
             return cls([[n] for n in names])
 
     def col(self, i):
+        """
+        Get `i`-th column as a view
+
+        >>> sl = SeqList([[0, 1, 2], [3, 4]])
+        >>> list(sl.col(0))
+        [0, 3]
+        >>> list(sl.col(2))
+        [2]
+        >>> sl.col(2).indices
+        [0]
+
+        """
         indices = [j for (j, seq) in enumerate(self._los) if i < len(seq)]
         return ColView(self._los, i, indices)
 
     def extendseq(self, los, indices):
+        """
+        Extend sequences by adding each sequence in the list `los`
+
+        >>> sl = SeqList([[0], [3]])
+        >>> sl.extendseq([[1], [4]], [0, 1])
+        >>> sl
+        SeqList([[0, 1], [3, 4]])
+        >>> sl.extendseq([[2, 2]], [0])
+        >>> sl
+        SeqList([[0, 1, 2, 2], [3, 4]])
+
+        """
         for (s, i) in zip(los, indices):
             self._los[i].extend(s)
 
@@ -405,9 +451,27 @@ class SeqList(object):
         return cls([[] for _dummy in range(numseq)])
 
     def subseqlist(self, start, stop):
+        """
+        Get list of subsequences
+
+        >>> sl = SeqList([[0, 1, 2], [3, 4, 5]])
+        >>> sl.subseqlist(1, 3)
+        SeqList([[1, 2], [4, 5]])
+
+        """
         return self.__class__([s[start:stop] for s in self._los])
 
     def colidentical(self, i):
+        """
+        Check if the `i`-th element of all sequences are the same
+
+        >>> sl = SeqList([[0, 1], [3, 1]])
+        >>> sl.colidentical(0)
+        False
+        >>> sl.colidentical(1)
+        True
+
+        """
         return len(set(self.col(i))) == 1
 
     def reverseseq(self):
