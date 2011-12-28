@@ -58,7 +58,6 @@ __all__ = ["shortname", "shortpath", "shortpath", "shortname"]
 
 
 import os
-import itertools
 import functools
 
 
@@ -113,7 +112,7 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     numnames = len(set(names))
     i0set = False
     for i in range(sl.maxseqlen()):
-        if not i0set and not sl.colunique(i):
+        if not i0set and not sl.colidentical(i):
             i0 = i
             i0set = True
         if i0set:
@@ -233,19 +232,6 @@ def _skip_common_parts(name, chunks, sep, skip):
     return sep.join(_skip_common_parts_as_list(name, chunks, len(sep), skip))
 
 
-def _skip_common_parts_as_list(name, chunks, sepwidth, skip):
-    skipwidth = len(skip)
-    newname = []
-    for ((start, stop), diff) in zip(*chunks):
-        subname = name[start:stop]
-        subwidth = sum(map(len, subname)) + sepwidth * (stop - start)
-        if diff or subwidth < skipwidth:
-            newname.extend(subname)
-        else:
-            newname.append(skip)
-    return newname
-
-
 def _every_other(iterative, sep, head=False, tail=False):
     """
     Put ``sep`` into every other element in ``iterative``
@@ -265,6 +251,19 @@ def _every_other(iterative, sep, head=False, tail=False):
         yield elem
     if tail:
         yield sep
+
+
+def _skip_common_parts_as_list(name, chunks, sepwidth, skip):
+    skipwidth = len(skip)
+    newname = []
+    for ((start, stop), diff) in zip(*chunks):
+        subname = name[start:stop]
+        subwidth = sum(map(len, subname)) + sepwidth * (stop - start)
+        if diff or subwidth < skipwidth:
+            newname.extend(subname)
+        else:
+            newname.append(skip)
+    return newname
 
 
 def _get_chunks(lol):
@@ -408,7 +407,7 @@ class SeqList(object):
     def subseqlist(self, start, stop):
         return self.__class__([s[start:stop] for s in self._los])
 
-    def colunique(self, i):
+    def colidentical(self, i):
         return len(set(self.col(i))) == 1
 
     def reverseseq(self):
