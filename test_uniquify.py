@@ -166,3 +166,20 @@ def deeplyreplaced(lst, old, new):
             elem = new
         newlst.append(elem)
     return newlst
+
+
+class TestColViewHomo(CheckData):
+
+    data = [
+        (True,  [[0, 1], [0, 2], [0, 2]], 0),
+        (False, [[0, 1], [0, 2], [0, 2]], 1),
+        (False, [[0, 1], [0, 2], [0, 2]], 2),
+        (False, [[0, 1], [0, 2], [0, 2]], 0, []),
+        (True,  [[0, 1], [0, 2], [0, 2]], 1, range(1, 3)),
+        ]
+
+    def check(self, result, los, i, indices=None):
+        col = uniquify.ColView(los, i)
+        if indices is not None:
+            col.indices = indices
+        eq_(result, col.homo())
