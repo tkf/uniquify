@@ -427,8 +427,7 @@ class SeqList(object):
         [0]
 
         """
-        indices = [j for (j, seq) in enumerate(self._los) if i < len(seq)]
-        return ColView(self._los, i, indices)
+        return ColView(self._los, i)
 
     def extendseq(self, los, indices):
         """
@@ -506,10 +505,10 @@ class SeqList(object):
 
 class ColView(object):
 
-    def __init__(self, los, i, indices):
+    def __init__(self, los, i):
         self._los = los
         self._i = i
-        self.indices = indices
+        self.indices = [j for (j, seq) in enumerate(los) if i < len(seq)]
 
     def __iter__(self):
         return (self._los[j][self._i] for j in self.indices)
