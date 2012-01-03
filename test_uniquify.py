@@ -86,6 +86,9 @@ class TestSkipCommonName(CheckData):
         rak(['aa|*|*_e', 'ab|*|*_d', 'ab|*|*_e'],
             ['aa|c|d_e', 'ab|c|d_d', 'ab|c|d_e'],
             sep=('|', '_'), skip='*'),
+        rak(['*/b/z', '*/c/d/z'],
+            ['a/b/z', 'a/c/d/z'],
+            sep='/', skip='*'),
         ]
 
     def check(self, result, args, kwds):

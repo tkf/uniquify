@@ -405,7 +405,8 @@ class SeqList(object):
             fullsl = cls.makeempty(len(newsl))
             for i in range(newsl.maxseqlen()):
                 subnames = newsl.col(i)
-                if len(set(subnames)) == 1 and subnames[0] in (sep, skip):
+                if (len(set(subnames)) == 1 and
+                    subnames.nonnull() in (sep, skip)):
                     subnews = [[n] for n in subnames]
                 else:
                     subnews = cls.skipcommon(subnames, seplist[1:], skip)
@@ -529,6 +530,12 @@ class ColView(object):
 
     def __getitem__(self, j):
         return self._los[j][self._i]
+
+    def nonnull(self, k=0):
+        """
+        Return a non-null value in this column
+        """
+        return self._los[self.indices[k]][self._i]
 
 
 def main():
