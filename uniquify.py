@@ -112,7 +112,7 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
     numnames = len(set(names))
     i0set = False
     for i in range(sl.maxseqlen()):
-        if not i0set and not sl.colidentical(i):
+        if not i0set and not sl.col(i).homo():
             i0 = i
             i0set = True
         if i0set:
@@ -405,8 +405,7 @@ class SeqList(object):
             fullsl = cls.makeempty(len(newsl))
             for i in range(newsl.maxseqlen()):
                 subnames = newsl.col(i)
-                if (len(set(subnames)) == 1 and
-                    subnames.nonnull() in (sep, skip)):
+                if subnames.homo() and subnames.nonnull() in (sep, skip):
                     subnews = [[n] for n in subnames]
                 else:
                     subnews = cls.skipcommon(subnames, seplist[1:], skip)
@@ -461,19 +460,6 @@ class SeqList(object):
 
         """
         return self.__class__([s[start:stop] for s in self._los])
-
-    def colidentical(self, i):
-        """
-        Check if the `i`-th element of all sequences are the same
-
-        >>> sl = SeqList([[0, 1], [3, 1]])
-        >>> sl.colidentical(0)
-        False
-        >>> sl.colidentical(1)
-        True
-
-        """
-        return len(set(self.col(i))) == 1
 
     def reverseseq(self):
         """
@@ -530,6 +516,12 @@ class ColView(object):
 
     def __getitem__(self, j):
         return self._los[j][self._i]
+
+    def homo(self):
+        """
+        Return true if this column is homogeneous (all elements are the same)
+        """
+        return len(set(self)) == 1
 
     def nonnull(self, k=0):
         """
