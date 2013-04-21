@@ -52,7 +52,7 @@ Install it from pypi_
 # [[[end]]]
 
 __author__ = "Takafumi Arakaki"
-__version__ = '0.0.1.dev0'
+__version__ = '0.0.1'
 __license__ = "MIT License"
 __all__ = ["shortname", "shortpath", "shortpath", "shortname"]
 
