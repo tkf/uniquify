@@ -121,7 +121,7 @@ def shortname(names, sep=None, skip='...', utype='tail', minlen=1):
                 subsl.reverseseq()
             subnames = subsl.joinseqs_skipping_nones()
             if (len(set(subnames)) == numnames and
-                min(map(len, subnames)) >= minlen):
+                min(list(map(len, subnames))) >= minlen):
                 return subnames
     if utype == 'tail':
         sl.reverseseq()
@@ -245,7 +245,7 @@ def _every_other(iterative, sep, head=False, tail=False):
     iterative = iter(iterative)
     if head:
         yield sep
-    yield iterative.next()
+    yield next(iterative)
     for elem in iterative:
         yield sep
         yield elem
@@ -343,7 +343,7 @@ def _diff_list(lol):
     ls0 = lol[0]
     ls0len = len(ls0)
     maxlen = max(len(ls) for ls in lol)
-    indices = range(maxlen)
+    indices = list(range(maxlen))
     diff = [False] * maxlen
     for ls in lol[1:]:
         for i in indices:
@@ -381,10 +381,10 @@ class SeqList(object):
         self._los = los
 
     def __unicode__(self):
-        return u"{0}({1})".format(self.__class__.__name__, self._los)
+        return "{0}({1})".format(self.__class__.__name__, self._los)
 
     def __repr__(self):
-        return u"{0}({1!r})".format(self.__class__.__name__, self._los)
+        return "{0}({1!r})".format(self.__class__.__name__, self._los)
 
     def __len__(self):
         return len(self._los)
@@ -485,10 +485,10 @@ class SeqList(object):
             [s + [fill] * (seqlen - len(s)) for s in self._los])
 
     def maxseqlen(self):
-        return max(map(len, self._los))
+        return max(list(map(len, self._los)))
 
     def joinseqs(self):
-        return map(''.join, self._los)
+        return list(map(''.join, self._los))
 
     def joinseqs_skipping_nones(self, none=None):
         """
@@ -551,10 +551,10 @@ def main():
         import sys
         infile = sys.stdin
     else:
-        infile = file(args.file)
-    lines = map(str.strip, infile.readlines())
+        infile = open(args.file, 'r')
+    lines = list(map(str.strip, infile.readlines()))
 
-    print '\n'.join(globals()[args.method](lines, **kwds))
+    print(('\n'.join(globals()[args.method](lines, **kwds))))
 
 
 if __name__ == '__main__':

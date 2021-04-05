@@ -175,7 +175,7 @@ class TestColViewHomo(CheckData):
         (False, [[0, 1], [0, 2], [0, 2]], 1),
         (False, [[0, 1], [0, 2], [0, 2]], 2),
         (False, [[0, 1], [0, 2], [0, 2]], 0, []),
-        (True,  [[0, 1], [0, 2], [0, 2]], 1, range(1, 3)),
+        (True,  [[0, 1], [0, 2], [0, 2]], 1, list(range(1, 3))),
         ]
 
     def check(self, result, los, i, indices=None):
@@ -191,7 +191,7 @@ class TestColViewNonNull(CheckData):
         (0, [[0, 1], [0, 2], [0, 2]], 0),
         (1, [[0, 1], [0, 2], [0, 2]], 1),
         (2, [[0, 1], [0, 2], [0, 2]], 1, 1),
-        (2, [[0, 1], [0, 2], [0, 2]], 1, 0, range(1, 3)),
+        (2, [[0, 1], [0, 2], [0, 2]], 1, 0, list(range(1, 3))),
         ]
 
     def check(self, result, los, i, k=0, indices=None):
