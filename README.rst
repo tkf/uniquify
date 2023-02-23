@@ -1,6 +1,8 @@
 Uniquify - get unique, short and easy-to-read names and paths
 =============================================================
 
+This fork supports Python 3.
+
 Examples
 --------
 
