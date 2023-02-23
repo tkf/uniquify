@@ -1,7 +1,7 @@
 # Import README.rst using cog
 # [[[cog
 # from cog import out
-# out('"""\n{0}\n"""'.format(file('README.rst').read()))
+# out('"""\n{0}\n"""'.format(open('README.rst', 'r').read()))
 # ]]]
 """
 Uniquify - get unique, short and easy-to-read names and paths
@@ -52,7 +52,7 @@ Install it from pypi_
 # [[[end]]]
 
 __author__ = "Takafumi Arakaki"
-__version__ = '0.0.1'
+__version__ = '0.5.0'
 __license__ = "MIT License"
 __all__ = ["shortname", "shortpath", "shortpath", "shortname"]
 
